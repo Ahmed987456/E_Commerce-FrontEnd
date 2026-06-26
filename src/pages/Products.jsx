@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axiosInstance";
+import { useLocation } from 'react-router-dom';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -9,6 +10,7 @@ export default function Products() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+ const location = useLocation();
 
  useEffect(() => {
   const fetchInitialData = async () => {
@@ -29,20 +31,30 @@ export default function Products() {
 }, []);
 
 useEffect(() => {
-  if (!search.trim()) return;
-
-  const delaySearch = setTimeout(async () => {
+  const fetchInitialData = async () => {
     try {
-      const res = await api.get(`/Products/search?Name=${search}`);
-      setProducts(res.data);
-      setSelectedCategory(null);
+      const [productsRes, categoriesRes] = await Promise.all([
+        api.get('/Products'),
+        api.get('/Categorys'),
+      ]);
+      setCategories(categoriesRes.data);
+      
+      // لو جاي من الهوم بكاتيجوري معينة
+      if (location.state?.categoryId) {
+        const res = await api.get(`/Products/productsByCategory/${location.state.categoryId}`);
+        setProducts(res.data);
+        setSelectedCategory(location.state.categoryId);
+      } else {
+        setProducts(productsRes.data);
+      }
     } catch (err) {
-      setProducts([]);
+      setError('حصل خطأ في تحميل البيانات');
+    } finally {
+      setLoading(false);
     }
-  }, 400);
-
-  return () => clearTimeout(delaySearch);
-}, [search]);
+  };
+  fetchInitialData();
+}, []);
 
 
   const handleCategorySelect = async (categoryId) => {

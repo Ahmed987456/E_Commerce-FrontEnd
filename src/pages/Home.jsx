@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import api from '../api/axiosInstance';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import api from "../api/axiosInstance";
 
 const categoryIcons = {
-  'Electronics': '💻',
-  'Fashion': '👗',
-  'Beauty & Personal Care': '💄',
-  'Sports & Fitness': '🏋️',
-  'Books': '📚',
+  Electronics: "💻",
+  Fashion: "👗",
+  "Beauty & Personal Care": "💄",
+  "Sports & Fitness": "🏋️",
+  Books: "📚",
 };
 
 export default function Home() {
@@ -18,8 +18,8 @@ export default function Home() {
     const fetchData = async () => {
       try {
         const [catsRes, prodsRes] = await Promise.all([
-          api.get('/Categorys'),
-          api.get('/Products'),
+          api.get("/Categorys"),
+          api.get("/Products"),
         ]);
         setCategories(catsRes.data);
         setProducts(prodsRes.data.slice(0, 6));
@@ -32,7 +32,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#0f1117]">
-
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#1a1d27] via-[#1e1b2e] to-[#0f1117] py-24 px-4">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900/30 via-transparent to-transparent" />
@@ -42,7 +41,10 @@ export default function Home() {
           </span>
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
             تسوق بذكاء،
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400"> وفّر أكتر</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+              {" "}
+              وفّر أكتر
+            </span>
           </h1>
           <p className="text-gray-400 text-lg mb-8 max-w-xl mx-auto">
             آلاف المنتجات من أفضل الماركات بأسعار لا تُقاوم، توصلك لحد بيتك
@@ -68,9 +70,9 @@ export default function Home() {
       <section className="bg-[#1a1d27] border-y border-[#2a2d3a] py-6">
         <div className="max-w-6xl mx-auto px-4 grid grid-cols-3 gap-4 text-center">
           {[
-            { label: 'منتج متاح', value: '1000+' },
-            { label: 'عميل سعيد', value: '50K+' },
-            { label: 'تسليم سريع', value: '24h' },
+            { label: "منتج متاح", value: "1000+" },
+            { label: "عميل سعيد", value: "50K+" },
+            { label: "تسليم سريع", value: "24h" },
           ].map((stat, i) => (
             <div key={i}>
               <p className="text-2xl font-bold text-purple-400">{stat.value}</p>
@@ -84,7 +86,10 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-4 py-12">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-white">تسوق حسب الفئة</h2>
-          <Link to="/products" className="text-purple-400 hover:text-purple-300 text-sm transition">
+          <Link
+            to="/products"
+            className="text-purple-400 hover:text-purple-300 text-sm transition"
+          >
             عرض الكل ←
           </Link>
         </div>
@@ -92,11 +97,12 @@ export default function Home() {
           {categories.map((cat) => (
             <Link
               to="/products"
+              state={{ categoryId: cat.id }}
               key={cat.id}
               className="bg-[#1a1d27] border border-[#2a2d3a] hover:border-purple-500/50 rounded-2xl p-4 text-center transition group"
             >
               <div className="text-3xl mb-2">
-                {categoryIcons[cat.name] || '🛍️'}
+                {categoryIcons[cat.name] || "🛍️"}
               </div>
               <p className="font-medium text-gray-300 text-sm group-hover:text-white transition">
                 {cat.name}
@@ -113,7 +119,10 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-4 pb-16">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-white">منتجات مميزة 🔥</h2>
-          <Link to="/products" className="text-purple-400 hover:text-purple-300 text-sm transition">
+          <Link
+            to="/products"
+            className="text-purple-400 hover:text-purple-300 text-sm transition"
+          >
             عرض الكل ←
           </Link>
         </div>
@@ -129,11 +138,16 @@ export default function Home() {
                   src={product.imageUrl}
                   alt={product.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                  onError={(e) => e.target.src = 'https://via.placeholder.com/300x200/1a1d27/666?text=No+Image'}
+                  onError={(e) =>
+                    (e.target.src =
+                      "https://via.placeholder.com/300x200/1a1d27/666?text=No+Image")
+                  }
                 />
               </div>
               <div className="p-4">
-                <span className="text-xs text-purple-400">{product.categoryName}</span>
+                <span className="text-xs text-purple-400">
+                  {product.categoryName}
+                </span>
                 <h3 className="font-semibold text-gray-200 text-sm mt-1 mb-2 line-clamp-2 group-hover:text-white transition">
                   {product.name}
                 </h3>
@@ -141,12 +155,14 @@ export default function Home() {
                   <span className="text-purple-400 font-bold">
                     {product.price.toLocaleString()} ج.م
                   </span>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    product.stockQuantity > 0
-                      ? 'bg-green-500/10 text-green-400'
-                      : 'bg-red-500/10 text-red-400'
-                  }`}>
-                    {product.stockQuantity > 0 ? 'متاح' : 'نفذ'}
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      product.stockQuantity > 0
+                        ? "bg-green-500/10 text-green-400"
+                        : "bg-red-500/10 text-red-400"
+                    }`}
+                  >
+                    {product.stockQuantity > 0 ? "متاح" : "نفذ"}
                   </span>
                 </div>
               </div>

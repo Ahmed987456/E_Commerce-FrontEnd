@@ -10,18 +10,18 @@ export default function Checkout() {
   const [error, setError] = useState('');
 
   const handleOrder = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      await api.post('/Orders/CreateOrder');
-      clearCart();
-      navigate('/orders');
-    } catch (err) {
-      setError('حصل خطأ في إتمام الطلب، حاول تاني');
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  setError('');
+  try {
+    await api.post('/Orders/CreateOrder');
+    clearCart();
+    navigate('/orders');
+  } catch (err) {
+    setError(err.response?.data || 'حصل خطأ في إتمام الطلب');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#0f1117] flex items-center justify-center px-4">
