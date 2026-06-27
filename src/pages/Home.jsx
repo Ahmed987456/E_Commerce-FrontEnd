@@ -95,22 +95,35 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
           {categories.map((cat) => (
-            <Link
-              to="/products"
-              state={{ categoryId: cat.id }}
-              key={cat.id}
-              className="bg-[#1a1d27] border border-[#2a2d3a] hover:border-purple-500/50 rounded-2xl p-4 text-center transition group"
-            >
-              <div className="text-3xl mb-2">
-                {categoryIcons[cat.name] || "🛍️"}
+            <div key={cat.id} className="relative group">
+              <div className="bg-[#1a1d27] border border-[#2a2d3a] hover:border-purple-500/50 rounded-2xl p-4 text-center transition cursor-pointer">
+                <div className="text-3xl mb-2">
+                  {categoryIcons[cat.name] || "🛍️"}
+                </div>
+                <p className="font-medium text-gray-300 text-sm group-hover:text-white transition">
+                  {cat.name}
+                </p>
+                <p className="text-xs text-gray-600 mt-1">
+                  {cat.subCategories?.length} أقسام
+                </p>
               </div>
-              <p className="font-medium text-gray-300 text-sm group-hover:text-white transition">
-                {cat.name}
-              </p>
-              <p className="text-xs text-gray-600 mt-1">
-                {cat.subCategories?.length} أقسام
-              </p>
-            </Link>
+
+              {/* Dropdown */}
+              {cat.subCategories?.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-[#1a1d27] border border-[#2a2d3a] rounded-xl overflow-hidden z-10 hidden group-hover:block">
+                  {cat.subCategories.map((sub) => (
+                    <Link
+                      key={sub.id}
+                      to="/products"
+                      state={{ categoryId: sub.id }}
+                      className="block px-4 py-2 text-sm text-gray-400 hover:bg-[#2a2d3a] hover:text-white transition"
+                    >
+                      {sub.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </section>
