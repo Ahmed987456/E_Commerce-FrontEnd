@@ -41,13 +41,18 @@ export default function Cart() {
   };
 
   const handleDelete = async (productId) => {
-    try {
-      await api.delete(`/CarItems?ProductId=${productId}`);
-      await fetchCart();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const confirmDelete = window.confirm("هل أنت متأكد أنك تريد حذف هذا المنتج من السلة؟");
+
+  if (!confirmDelete) return;
+
+  try {
+    await api.delete(`/CarItems?ProductId=${productId}`);
+    await fetchCart();
+  } catch (err) {
+    console.error(err);
+    alert("حدث خطأ أثناء حذف المنتج");
+  }
+};
 
   if (loading) return (
     <div className="flex justify-center items-center min-h-screen bg-[#0f1117]">
