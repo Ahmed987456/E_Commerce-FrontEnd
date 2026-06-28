@@ -1,36 +1,67 @@
-import { useState, useEffect } from 'react';
-import api from '../api/axiosInstance';
+import { useState, useEffect } from "react";
+import api from "../api/axiosInstance";
 
-const STATUS_OPTIONS = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+const STATUS_OPTIONS = [
+  "Pending",
+  "Processing",
+  "Shipped",
+  "Delivered",
+  "Cancelled",
+];
 
+const [editingCategory, setEditingCategory] = useState(null);
+const [editCategoryName, setEditCategoryName] = useState("");
+
+const handleEditCategory = (cat) => {
+  setEditingCategory(cat.id);
+  setEditCategoryName(cat.name);
+};
+
+const handleSaveCategory = async (id) => {
+  try {
+    await api.put(`/Categorys/${id}`, { Name: editCategoryName });
+    setEditingCategory(null);
+    fetchCategories();
+  } catch (err) {
+    alert(err.response?.data || "حصل خطأ");
+  }
+};
 const statusArabic = {
-  Pending: 'قيد الانتظار',
-  Processing: 'جاري التجهيز',
-  Shipped: 'تم الشحن',
-  Delivered: 'تم التسليم',
-  Cancelled: 'ملغي',
+  Pending: "قيد الانتظار",
+  Processing: "جاري التجهيز",
+  Shipped: "تم الشحن",
+  Delivered: "تم التسليم",
+  Cancelled: "ملغي",
 };
 
 const statusColors = {
-  Pending: 'bg-yellow-500/10 text-yellow-400',
-  Processing: 'bg-blue-500/10 text-blue-400',
-  Shipped: 'bg-purple-500/10 text-purple-400',
-  Delivered: 'bg-green-500/10 text-green-400',
-  Cancelled: 'bg-red-500/10 text-red-400',
+  Pending: "bg-yellow-500/10 text-yellow-400",
+  Processing: "bg-blue-500/10 text-blue-400",
+  Shipped: "bg-purple-500/10 text-purple-400",
+  Delivered: "bg-green-500/10 text-green-400",
+  Cancelled: "bg-red-500/10 text-red-400",
 };
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState('products');
+  const [activeTab, setActiveTab] = useState("products");
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [orders, setOrders] = useState([]);
 
   const [productForm, setProductForm] = useState({
-    name: '', description: '', price: '', stockQuantity: '', imageUrl: '', categoryId: '',
+    name: "",
+    description: "",
+    price: "",
+    stockQuantity: "",
+    imageUrl: "",
+    categoryId: "",
   });
   const [editingProduct, setEditingProduct] = useState(null);
-  const [categoryForm, setCategoryForm] = useState({ name: '', parentCategoryId: '' });
+  const [categoryForm, setCategoryForm] = useState({
+    name: "",
+    parentCategoryId: "",
+  });
 
   useEffect(() => {
     fetchProducts();
@@ -39,18 +70,18 @@ export default function Admin() {
   }, []);
 
   const fetchProducts = async () => {
-    const res = await api.get('/Products');
+    const res = await api.get("/Products");
     setProducts(res.data);
   };
 
   const fetchCategories = async () => {
-    const res = await api.get('/Categorys');
+    const res = await api.get("/Categorys");
     setCategories(res.data);
   };
 
   const fetchOrders = async () => {
     try {
-      const res = await api.get('/Orders/AllOrders');
+      const res = await api.get("/Orders/AllOrders");
       setOrders(res.data);
     } catch (err) {
       console.error(err);
@@ -59,7 +90,9 @@ export default function Admin() {
 
   const getAllSubCategories = () => {
     const subs = [];
-    categories.forEach(cat => cat.subCategories?.forEach(sub => subs.push(sub)));
+    categories.forEach((cat) =>
+      cat.subCategories?.forEach((sub) => subs.push(sub)),
+    );
     return subs;
   };
 
@@ -77,13 +110,20 @@ export default function Admin() {
       if (editingProduct) {
         await api.put(`/Products/${editingProduct}`, body);
       } else {
-        await api.post('/Products', body);
+        await api.post("/Products", body);
       }
-      setProductForm({ name: '', description: '', price: '', stockQuantity: '', imageUrl: '', categoryId: '' });
+      setProductForm({
+        name: "",
+        description: "",
+        price: "",
+        stockQuantity: "",
+        imageUrl: "",
+        categoryId: "",
+      });
       setEditingProduct(null);
       fetchProducts();
     } catch (err) {
-      alert(err.response?.data || 'حصل خطأ');
+      alert(err.response?.data || "حصل خطأ");
     }
   };
 
@@ -91,7 +131,7 @@ export default function Admin() {
     setEditingProduct(product.id);
     setProductForm({
       name: product.name,
-      description: product.description || '',
+      description: product.description || "",
       price: product.price,
       stockQuantity: product.stockQuantity,
       imageUrl: product.imageUrl,
@@ -100,7 +140,7 @@ export default function Admin() {
   };
 
   const handleDeleteProduct = async (id) => {
-    if (!confirm('هتحذف المنتج ده؟')) return;
+    if (!confirm("هتحذف المنتج ده؟")) return;
     await api.delete(`/Products/${id}`);
     fetchProducts();
   };
@@ -108,24 +148,26 @@ export default function Admin() {
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/Categorys', {
+      await api.post("/Categorys", {
         Name: categoryForm.name,
-        ParentCategoryId: categoryForm.parentCategoryId ? parseInt(categoryForm.parentCategoryId) : null,
+        ParentCategoryId: categoryForm.parentCategoryId
+          ? parseInt(categoryForm.parentCategoryId)
+          : null,
       });
-      setCategoryForm({ name: '', parentCategoryId: '' });
+      setCategoryForm({ name: "", parentCategoryId: "" });
       fetchCategories();
     } catch (err) {
-      alert(err.response?.data || 'حصل خطأ');
+      alert(err.response?.data || "حصل خطأ");
     }
   };
 
   const handleDeleteCategory = async (id) => {
-    if (!confirm('هتحذف الفئة دي؟')) return;
+    if (!confirm("هتحذف الفئة دي؟")) return;
     try {
       await api.delete(`/Categorys/${id}`);
       fetchCategories();
     } catch (err) {
-      alert(err.response?.data || 'حصل خطأ');
+      alert(err.response?.data || "حصل خطأ");
     }
   };
 
@@ -134,34 +176,34 @@ export default function Admin() {
       await api.put(`/Orders/UpdateStatus/${orderId}`, { OrderStatus: status });
       fetchOrders();
     } catch (err) {
-      alert('حصل خطأ في تحديث الحالة');
+      alert("حصل خطأ في تحديث الحالة");
     }
   };
 
   const tabs = [
-    { key: 'products', label: '📦 المنتجات', count: products.length },
-    { key: 'categories', label: '🗂 الفئات', count: categories.length },
-    { key: 'orders', label: '🧾 الطلبات', count: orders.length },
+    { key: "products", label: "📦 المنتجات", count: products.length },
+    { key: "categories", label: "🗂 الفئات", count: categories.length },
+    { key: "orders", label: "🧾 الطلبات", count: orders.length },
   ];
 
-  const inputClass = "w-full bg-[#0f1117] border border-[#2a2d3a] text-gray-300 placeholder-gray-600 rounded-xl px-4 py-2.5 focus:outline-none focus:border-purple-500 transition";
+  const inputClass =
+    "w-full bg-[#0f1117] border border-[#2a2d3a] text-gray-300 placeholder-gray-600 rounded-xl px-4 py-2.5 focus:outline-none focus:border-purple-500 transition";
 
   return (
     <div className="min-h-screen bg-[#0f1117]">
       <div className="max-w-6xl mx-auto px-4 py-8">
-
         <h1 className="text-2xl font-bold text-white mb-6">⚙️ لوحة التحكم</h1>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 border-b border-[#2a2d3a]">
-          {tabs.map(tab => (
+          {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`px-4 py-2.5 font-medium transition border-b-2 text-sm flex items-center gap-2 ${
                 activeTab === tab.key
-                  ? 'border-purple-500 text-purple-400'
-                  : 'border-transparent text-gray-500 hover:text-gray-300'
+                  ? "border-purple-500 text-purple-400"
+                  : "border-transparent text-gray-500 hover:text-gray-300"
               }`}
             >
               {tab.label}
@@ -173,45 +215,105 @@ export default function Admin() {
         </div>
 
         {/* Products Tab */}
-        {activeTab === 'products' && (
+        {activeTab === "products" && (
           <div className="space-y-6">
             <div className="bg-[#1a1d27] border border-[#2a2d3a] rounded-2xl p-6">
               <h2 className="font-bold text-white mb-4">
-                {editingProduct ? '✏️ تعديل منتج' : '➕ إضافة منتج جديد'}
+                {editingProduct ? "✏️ تعديل منتج" : "➕ إضافة منتج جديد"}
               </h2>
-              <form onSubmit={handleProductSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input placeholder="اسم المنتج" value={productForm.name}
-                  onChange={e => setProductForm({ ...productForm, name: e.target.value })}
-                  className={inputClass} />
-                <input placeholder="السعر" type="number" value={productForm.price}
-                  onChange={e => setProductForm({ ...productForm, price: e.target.value })}
-                  className={inputClass} />
-                <input placeholder="الكمية" type="number" value={productForm.stockQuantity}
-                  onChange={e => setProductForm({ ...productForm, stockQuantity: e.target.value })}
-                  className={inputClass} />
-                <input placeholder="رابط الصورة" value={productForm.imageUrl}
-                  onChange={e => setProductForm({ ...productForm, imageUrl: e.target.value })}
-                  className={inputClass} />
-                <textarea placeholder="الوصف" value={productForm.description}
-                  onChange={e => setProductForm({ ...productForm, description: e.target.value })}
-                  className={`${inputClass} sm:col-span-2`} rows={2} />
-                <select value={productForm.categoryId}
-                  onChange={e => setProductForm({ ...productForm, categoryId: e.target.value })}
-                  className={inputClass}>
+              <form
+                onSubmit={handleProductSubmit}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+              >
+                <input
+                  placeholder="اسم المنتج"
+                  value={productForm.name}
+                  onChange={(e) =>
+                    setProductForm({ ...productForm, name: e.target.value })
+                  }
+                  className={inputClass}
+                />
+                <input
+                  placeholder="السعر"
+                  type="number"
+                  value={productForm.price}
+                  onChange={(e) =>
+                    setProductForm({ ...productForm, price: e.target.value })
+                  }
+                  className={inputClass}
+                />
+                <input
+                  placeholder="الكمية"
+                  type="number"
+                  value={productForm.stockQuantity}
+                  onChange={(e) =>
+                    setProductForm({
+                      ...productForm,
+                      stockQuantity: e.target.value,
+                    })
+                  }
+                  className={inputClass}
+                />
+                <input
+                  placeholder="رابط الصورة"
+                  value={productForm.imageUrl}
+                  onChange={(e) =>
+                    setProductForm({ ...productForm, imageUrl: e.target.value })
+                  }
+                  className={inputClass}
+                />
+                <textarea
+                  placeholder="الوصف"
+                  value={productForm.description}
+                  onChange={(e) =>
+                    setProductForm({
+                      ...productForm,
+                      description: e.target.value,
+                    })
+                  }
+                  className={`${inputClass} sm:col-span-2`}
+                  rows={2}
+                />
+                <select
+                  value={productForm.categoryId}
+                  onChange={(e) =>
+                    setProductForm({
+                      ...productForm,
+                      categoryId: e.target.value,
+                    })
+                  }
+                  className={inputClass}
+                >
                   <option value="">اختر الفئة الفرعية</option>
-                  {getAllSubCategories().map(sub => (
-                    <option key={sub.id} value={sub.id}>{sub.name}</option>
+                  {getAllSubCategories().map((sub) => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </option>
                   ))}
                 </select>
                 <div className="flex gap-2 sm:col-span-2">
-                  <button type="submit"
-                    className="bg-purple-600 text-white px-6 py-2.5 rounded-xl hover:bg-purple-700 transition font-medium">
-                    {editingProduct ? 'حفظ التعديل' : 'إضافة'}
+                  <button
+                    type="submit"
+                    className="bg-purple-600 text-white px-6 py-2.5 rounded-xl hover:bg-purple-700 transition font-medium"
+                  >
+                    {editingProduct ? "حفظ التعديل" : "إضافة"}
                   </button>
                   {editingProduct && (
-                    <button type="button"
-                      onClick={() => { setEditingProduct(null); setProductForm({ name: '', description: '', price: '', stockQuantity: '', imageUrl: '', categoryId: '' }); }}
-                      className="bg-[#2a2d3a] text-gray-400 px-6 py-2.5 rounded-xl hover:bg-[#3a3d4a] transition">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingProduct(null);
+                        setProductForm({
+                          name: "",
+                          description: "",
+                          price: "",
+                          stockQuantity: "",
+                          imageUrl: "",
+                          categoryId: "",
+                        });
+                      }}
+                      className="bg-[#2a2d3a] text-gray-400 px-6 py-2.5 rounded-xl hover:bg-[#3a3d4a] transition"
+                    >
                       إلغاء
                     </button>
                   )}
@@ -223,33 +325,58 @@ export default function Admin() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[#2a2d3a]">
-                    <th className="p-4 text-right text-gray-500 font-medium">المنتج</th>
-                    <th className="p-4 text-right text-gray-500 font-medium">الفئة</th>
-                    <th className="p-4 text-right text-gray-500 font-medium">السعر</th>
-                    <th className="p-4 text-right text-gray-500 font-medium">الكمية</th>
-                    <th className="p-4 text-right text-gray-500 font-medium">إجراءات</th>
+                    <th className="p-4 text-right text-gray-500 font-medium">
+                      المنتج
+                    </th>
+                    <th className="p-4 text-right text-gray-500 font-medium">
+                      الفئة
+                    </th>
+                    <th className="p-4 text-right text-gray-500 font-medium">
+                      السعر
+                    </th>
+                    <th className="p-4 text-right text-gray-500 font-medium">
+                      الكمية
+                    </th>
+                    <th className="p-4 text-right text-gray-500 font-medium">
+                      إجراءات
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map(product => (
-                    <tr key={product.id} className="border-b border-[#2a2d3a] hover:bg-[#2a2d3a]/30 transition">
+                  {products.map((product) => (
+                    <tr
+                      key={product.id}
+                      className="border-b border-[#2a2d3a] hover:bg-[#2a2d3a]/30 transition"
+                    >
                       <td className="p-4 text-gray-300">{product.name}</td>
-                      <td className="p-4 text-gray-500 text-xs">{product.categoryName}</td>
-                      <td className="p-4 text-purple-400 font-medium">{product.price.toLocaleString()} ج.م</td>
+                      <td className="p-4 text-gray-500 text-xs">
+                        {product.categoryName}
+                      </td>
+                      <td className="p-4 text-purple-400 font-medium">
+                        {product.price.toLocaleString()} ج.م
+                      </td>
                       <td className="p-4">
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          product.stockQuantity > 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
-                        }`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            product.stockQuantity > 0
+                              ? "bg-green-500/10 text-green-400"
+                              : "bg-red-500/10 text-red-400"
+                          }`}
+                        >
                           {product.stockQuantity}
                         </span>
                       </td>
                       <td className="p-4 flex gap-3">
-                        <button onClick={() => handleEditProduct(product)}
-                          className="text-blue-400 hover:text-blue-300 text-xs transition">
+                        <button
+                          onClick={() => handleEditProduct(product)}
+                          className="text-blue-400 hover:text-blue-300 text-xs transition"
+                        >
                           تعديل
                         </button>
-                        <button onClick={() => handleDeleteProduct(product.id)}
-                          className="text-red-400 hover:text-red-300 text-xs transition">
+                        <button
+                          onClick={() => handleDeleteProduct(product.id)}
+                          className="text-red-400 hover:text-red-300 text-xs transition"
+                        >
                           حذف
                         </button>
                       </td>
@@ -262,24 +389,44 @@ export default function Admin() {
         )}
 
         {/* Categories Tab */}
-        {activeTab === 'categories' && (
+        {activeTab === "categories" && (
           <div className="space-y-6">
             <div className="bg-[#1a1d27] border border-[#2a2d3a] rounded-2xl p-6">
               <h2 className="font-bold text-white mb-4">➕ إضافة فئة جديدة</h2>
-              <form onSubmit={handleCategorySubmit} className="flex gap-3 flex-wrap">
-                <input placeholder="اسم الفئة" value={categoryForm.name}
-                  onChange={e => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                  className={`${inputClass} flex-1`} required />
-                <select value={categoryForm.parentCategoryId}
-                  onChange={e => setCategoryForm({ ...categoryForm, parentCategoryId: e.target.value })}
-                  className="bg-[#0f1117] border border-[#2a2d3a] text-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-purple-500 transition">
+              <form
+                onSubmit={handleCategorySubmit}
+                className="flex gap-3 flex-wrap"
+              >
+                <input
+                  placeholder="اسم الفئة"
+                  value={categoryForm.name}
+                  onChange={(e) =>
+                    setCategoryForm({ ...categoryForm, name: e.target.value })
+                  }
+                  className={`${inputClass} flex-1`}
+                  required
+                />
+                <select
+                  value={categoryForm.parentCategoryId}
+                  onChange={(e) =>
+                    setCategoryForm({
+                      ...categoryForm,
+                      parentCategoryId: e.target.value,
+                    })
+                  }
+                  className="bg-[#0f1117] border border-[#2a2d3a] text-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-purple-500 transition"
+                >
                   <option value="">فئة رئيسية</option>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
                   ))}
                 </select>
-                <button type="submit"
-                  className="bg-purple-600 text-white px-6 py-2.5 rounded-xl hover:bg-purple-700 transition font-medium">
+                <button
+                  type="submit"
+                  className="bg-purple-600 text-white px-6 py-2.5 rounded-xl hover:bg-purple-700 transition font-medium"
+                >
                   إضافة
                 </button>
               </form>
@@ -289,37 +436,139 @@ export default function Admin() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[#2a2d3a]">
-                    <th className="p-4 text-right text-gray-500 font-medium">الفئة</th>
-                    <th className="p-4 text-right text-gray-500 font-medium">النوع</th>
-                    <th className="p-4 text-right text-gray-500 font-medium">إجراءات</th>
+                    <th className="p-4 text-right text-gray-500 font-medium">
+                      الفئة
+                    </th>
+                    <th className="p-4 text-right text-gray-500 font-medium">
+                      النوع
+                    </th>
+                    <th className="p-4 text-right text-gray-500 font-medium">
+                      إجراءات
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {categories.map(cat => (
+                  {categories.map((cat) => (
                     <>
-                      <tr key={`cat-${cat.id}`} className="border-b border-[#2a2d3a] bg-[#2a2d3a]/20">
-                        <td className="p-4 font-semibold text-white">{cat.name}</td>
+                      <tr
+                        key={`cat-${cat.id}`}
+                        className="border-b border-[#2a2d3a] bg-[#2a2d3a]/20"
+                      >
                         <td className="p-4">
-                          <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-1 rounded-full">رئيسية</span>
+                          {editingCategory === cat.id ? (
+                            <input
+                              value={editCategoryName}
+                              onChange={(e) =>
+                                setEditCategoryName(e.target.value)
+                              }
+                              className="bg-[#0f1117] border border-purple-500 text-white rounded-lg px-3 py-1 text-sm focus:outline-none"
+                            />
+                          ) : (
+                            <span className="font-semibold text-white">
+                              {cat.name}
+                            </span>
+                          )}
                         </td>
                         <td className="p-4">
-                          <button onClick={() => handleDeleteCategory(cat.id)}
-                            className="text-red-400 hover:text-red-300 text-xs transition">
-                            حذف
-                          </button>
+                          <span className="text-xs bg-purple-500/10 text-purple-400 px-2 py-1 rounded-full">
+                            رئيسية
+                          </span>
+                        </td>
+                        <td className="p-4 flex gap-3">
+                          {editingCategory === cat.id ? (
+                            <>
+                              <button
+                                onClick={() => handleSaveCategory(cat.id)}
+                                className="text-green-400 hover:text-green-300 text-xs transition"
+                              >
+                                حفظ
+                              </button>
+                              <button
+                                onClick={() => setEditingCategory(null)}
+                                className="text-gray-400 hover:text-gray-300 text-xs transition"
+                              >
+                                إلغاء
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleEditCategory(cat)}
+                                className="text-blue-400 hover:text-blue-300 text-xs transition"
+                              >
+                                تعديل
+                              </button>
+                              <button
+                                onClick={() => handleDeleteCategory(cat.id)}
+                                className="text-red-400 hover:text-red-300 text-xs transition"
+                              >
+                                حذف
+                              </button>
+                            </>
+                          )}
                         </td>
                       </tr>
-                      {cat.subCategories?.map(sub => (
-                        <tr key={`sub-${sub.id}`} className="border-b border-[#2a2d3a] hover:bg-[#2a2d3a]/30 transition">
-                          <td className="p-4 pr-8 text-gray-400">— {sub.name}</td>
-                          <td className="p-4">
-                            <span className="text-xs bg-blue-500/10 text-blue-400 px-2 py-1 rounded-full">فرعية</span>
+                      {cat.subCategories?.map((sub) => (
+                        <tr
+                          key={`sub-${sub.id}`}
+                          className="border-b border-[#2a2d3a] hover:bg-[#2a2d3a]/30 transition"
+                        >
+                          <td className="p-4 pr-8">
+                            {editingCategory === sub.id ? (
+                              <input
+                                value={editCategoryName}
+                                onChange={(e) =>
+                                  setEditCategoryName(e.target.value)
+                                }
+                                className="bg-[#0f1117] border border-blue-500 text-white rounded-lg px-3 py-1 text-sm focus:outline-none"
+                              />
+                            ) : (
+                              <span className="text-gray-400">
+                                — {sub.name}
+                              </span>
+                            )}
                           </td>
+
                           <td className="p-4">
-                            <button onClick={() => handleDeleteCategory(sub.id)}
-                              className="text-red-400 hover:text-red-300 text-xs transition">
-                              حذف
-                            </button>
+                            <span className="text-xs bg-blue-500/10 text-blue-400 px-2 py-1 rounded-full">
+                              فرعية
+                            </span>
+                          </td>
+
+                          <td className="p-4 flex gap-3">
+                            {editingCategory === sub.id ? (
+                              <>
+                                <button
+                                  onClick={() => handleSaveCategory(sub.id)}
+                                  className="text-green-400 hover:text-green-300 text-xs transition"
+                                >
+                                  حفظ
+                                </button>
+
+                                <button
+                                  onClick={() => setEditingCategory(null)}
+                                  className="text-gray-400 hover:text-gray-300 text-xs transition"
+                                >
+                                  إلغاء
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => handleEditCategory(sub)}
+                                  className="text-blue-400 hover:text-blue-300 text-xs transition"
+                                >
+                                  تعديل
+                                </button>
+
+                                <button
+                                  onClick={() => handleDeleteCategory(sub.id)}
+                                  className="text-red-400 hover:text-red-300 text-xs transition"
+                                >
+                                  حذف
+                                </button>
+                              </>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -332,54 +581,97 @@ export default function Admin() {
         )}
 
         {/* Orders Tab */}
-        {activeTab === 'orders' && (
+        {activeTab === "orders" && (
           <div className="bg-[#1a1d27] border border-[#2a2d3a] rounded-2xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#2a2d3a]">
-                  <th className="p-4 text-right text-gray-500 font-medium">رقم الطلب</th>
-                  <th className="p-4 text-right text-gray-500 font-medium">التاريخ</th>
-                  <th className="p-4 text-right text-gray-500 font-medium">الإجمالي</th>
-                  <th className="p-4 text-right text-gray-500 font-medium">الحالة</th>
-                  <th className="p-4 text-right text-gray-500 font-medium">تغيير الحالة</th>
+                  <th className="p-4 text-right text-gray-500 font-medium">
+                    رقم الطلب
+                  </th>
+                  <th className="p-4 text-right text-gray-500 font-medium">
+                    العميل
+                  </th>
+                  <th className="p-4 text-right text-gray-500 font-medium">
+                    التاريخ
+                  </th>
+                  <th className="p-4 text-right text-gray-500 font-medium">
+                    الإجمالي
+                  </th>
+                  <th className="p-4 text-right text-gray-500 font-medium">
+                    الحالة
+                  </th>
+                  <th className="p-4 text-right text-gray-500 font-medium">
+                    تغيير الحالة
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {orders.map(order => (
-                  <tr key={order.id} className="border-b border-[#2a2d3a] hover:bg-[#2a2d3a]/30 transition">
-                    <td className="p-4 text-gray-300">#{order.id}</td>
-                    <td className="p-4 text-gray-500 text-xs">
-                      {new Date(order.orderDate).toLocaleDateString('ar-EG')}
-                    </td>
-                    <td className="p-4 text-purple-400 font-medium">
-                      {order.totalPrice.toLocaleString()} ج.م
-                    </td>
-                    <td className="p-4">
-                      <span className={`text-xs px-2 py-1 rounded-full ${statusColors[order.orderStatus]}`}>
-                        {statusArabic[order.orderStatus]}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <select
-                        value={order.orderStatus}
-                        onChange={e => handleUpdateStatus(order.id, e.target.value)}
-                        disabled={order.orderStatus === 'Cancelled'}
-                        className="bg-[#0f1117] border border-[#2a2d3a] text-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-purple-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                {orders.map((order) => (
+                  <>
+                    <tr
+                      key={order.id}
+                      className="border-b border-[#2a2d3a] hover:bg-[#2a2d3a]/30 transition"
+                    >
+                      <td className="p-4 text-gray-300">#{order.id}</td>
+                      <td className="p-4">
+                        <p className="text-white text-xs">{order.userName}</p>
+                        <p className="text-gray-500 text-xs">
+                          {order.userEmail}
+                        </p>
+                      </td>
+                      <td className="p-4 text-gray-500 text-xs">
+                        {new Date(order.orderDate).toLocaleDateString("ar-EG")}
+                      </td>
+                      <td className="p-4 text-purple-400 font-medium">
+                        {order.totalPrice.toLocaleString()} ج.م
+                      </td>
+                      <td className="p-4">
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${statusColors[order.orderStatus]}`}
+                        >
+                          {statusArabic[order.orderStatus]}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <select
+                          value={order.orderStatus}
+                          onChange={(e) =>
+                            handleUpdateStatus(order.id, e.target.value)
+                          }
+                          disabled={order.orderStatus === "Cancelled"}
+                          className="bg-[#0f1117] border border-[#2a2d3a] text-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none disabled:opacity-40"
+                        >
+                          {STATUS_OPTIONS.map((s) => (
+                            <option key={s} value={s}>
+                              {statusArabic[s]}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                    </tr>
+                    {/* تفاصيل الأوردر */}
+                    {order.items?.length > 0 && (
+                      <tr
+                        key={`details-${order.id}`}
+                        className="border-b border-[#2a2d3a] bg-[#0f1117]/50"
                       >
-                        {STATUS_OPTIONS.map(s => (
-                          <option key={s} value={s}>{statusArabic[s]}</option>
-                        ))}
-                      </select>
-                    </td>
-                  </tr>
+                        <td colSpan={6} className="px-8 py-2">
+                          <div className="flex gap-4 flex-wrap">
+                            {order.items.map((item, i) => (
+                              <span key={i} className="text-xs text-gray-400">
+                                {item.productName} × {item.quantity} ={" "}
+                                {item.itemTotal.toLocaleString()} ج.م
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 ))}
               </tbody>
             </table>
-            {orders.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-600">مفيش طلبات لحد دلوقتي</p>
-              </div>
-            )}
           </div>
         )}
       </div>
