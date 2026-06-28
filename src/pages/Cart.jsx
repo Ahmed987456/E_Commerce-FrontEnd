@@ -42,7 +42,7 @@ export default function Cart() {
 
   const handleDelete = async (productId) => {
     try {
-      await api.delete('/CarItems', { data: { ProductId: productId } });
+      await api.delete(`/CarItems?ProductId=${productId}`);
       await fetchCart();
     } catch (err) {
       console.error(err);
