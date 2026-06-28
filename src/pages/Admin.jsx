@@ -9,23 +9,6 @@ const STATUS_OPTIONS = [
   "Cancelled",
 ];
 
-const [editingCategory, setEditingCategory] = useState(null);
-const [editCategoryName, setEditCategoryName] = useState("");
-
-const handleEditCategory = (cat) => {
-  setEditingCategory(cat.id);
-  setEditCategoryName(cat.name);
-};
-
-const handleSaveCategory = async (id) => {
-  try {
-    await api.put(`/Categorys/${id}`, { Name: editCategoryName });
-    setEditingCategory(null);
-    fetchCategories();
-  } catch (err) {
-    alert(err.response?.data || "حصل خطأ");
-  }
-};
 const statusArabic = {
   Pending: "قيد الانتظار",
   Processing: "جاري التجهيز",
@@ -43,6 +26,44 @@ const statusColors = {
 };
 
 export default function Admin() {
+  
+  const fetchProducts = async () => {
+    const res = await api.get("/Products");
+    setProducts(res.data);
+  };
+
+
+  const fetchOrders = async () => {
+    try {
+      const res = await api.get("/Orders/AllOrders");
+      setOrders(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchCategories = async () => {
+    const res = await api.get("/Categorys");
+    setCategories(res.data);
+  };
+
+  const handleEditCategory = (cat) => {
+    setEditingCategory(cat.id);
+    setEditCategoryName(cat.name);
+  };
+
+  const handleSaveCategory = async (id) => {
+    try {
+      await api.put(`/Categorys/${id}`, { Name: editCategoryName });
+      setEditingCategory(null);
+      fetchCategories();
+    } catch (err) {
+      alert(err.response?.data || "حصل خطأ");
+    }
+  };
+
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [editCategoryName, setEditCategoryName] = useState("");
   const [activeTab, setActiveTab] = useState("products");
 
   const [products, setProducts] = useState([]);
@@ -69,24 +90,7 @@ export default function Admin() {
     fetchOrders();
   }, []);
 
-  const fetchProducts = async () => {
-    const res = await api.get("/Products");
-    setProducts(res.data);
-  };
-
-  const fetchCategories = async () => {
-    const res = await api.get("/Categorys");
-    setCategories(res.data);
-  };
-
-  const fetchOrders = async () => {
-    try {
-      const res = await api.get("/Orders/AllOrders");
-      setOrders(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  
 
   const getAllSubCategories = () => {
     const subs = [];
